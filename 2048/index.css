@@ -19,7 +19,7 @@
   box-sizing: border-box;
   display: flex;
   align-items: start;
-  margin-bottom: 3rem;
+  margin-bottom: 1.5rem;
   max-width: 388px;
   width: 100%;
 }
@@ -42,7 +42,7 @@
   align-items: center;
   border-radius: 6px;
   border: 1.5px solid rgba(187, 173, 160, 0.6);
-  width: 60px !important;
+  width: 80px !important;
 }
 .game-2048 .score.best {
   background: rgba(187, 173, 160, 0.6);
