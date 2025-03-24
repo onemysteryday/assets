@@ -31,7 +31,7 @@
 */
 var CUSTOM_PARAMETERS = {
     archive_location_filter: function( path ) {
-        return ("https://raw.githubusercontent.com/onemysteryday/assets/refs/heads/main/dozets" + path + "");
+        return ("https://onemysteryday.github.io/assets/dozets" + path + "");
     },
     engine_arguments: ["--verify-graphics-calls=false",],
     custom_heap_size: 268435456,
@@ -1048,6 +1048,6 @@ var runningFromFileWarning = document.getElementById("running-from-file-warning"
 if (window.location.href.startsWith("file://")) {
     runningFromFileWarning.style.display = "block";
 } else {
-    EngineLoader.load("canvas", "https://raw.githubusercontent.com/onemysteryday/assets/refs/heads/main/dozets/Dozets");
+    EngineLoader.load("canvas", "https://onemysteryday.github.io/assets/dozets/Dozets");
     runningFromFileWarning.parentNode.removeChild(runningFromFileWarning);
 }
