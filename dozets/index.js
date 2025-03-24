@@ -57,10 +57,12 @@ var CUSTOM_PARAMETERS = {
             window.scrollTo(0, 0);
         }
     
+        var game_container = document.getElementById('game-container');
         var app_container = document.getElementById('app-container');
         var game_canvas = document.getElementById('canvas');
-        var innerWidth = window.innerWidth;
-        var innerHeight = window.innerHeight - buttonHeight;
+        var innerWidth = game_container.offsetWidth;
+        var innerHeight = game_container.offsetHeight - buttonHeight;
+        
         if (prevInnerWidth == innerWidth && prevInnerHeight == innerHeight)
         {
             return;
