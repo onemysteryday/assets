@@ -1044,12 +1044,89 @@ window.destroy = function() {
     _emscripten_cancel_main_loop();
 }
 
+const initialize = (rootId) => {
+    const root = document.getElementById(rootId);
+    if (!root) {
+        throw "No game container view";
+    }
+
+    const appContainer = document.createElement('div');
+    appContainer.id = 'app-container';
+    appContainer.className = 'canvas-app-container';
+
+    const runningFromFileWarning = document.createElement('div');
+    runningFromFileWarning.id = 'running-from-file-warning';
+    runningFromFileWarning.style.display = 'none';
+    runningFromFileWarning.style.margin = '3em';
+
+    const warningTitle = document.createElement('h1');
+    warningTitle.textContent = 'Running from local file ⚠️';
+    runningFromFileWarning.appendChild(warningTitle);
+
+    const warningText1 = document.createElement('p');
+    warningText1.innerHTML = 'It seems like you have opened this file by double-clicking on it. In order to test your build in a browser <b>you need to load this file from a web server</b>. You can either upload this file and the rest of the files from a Defold HTML5 bundle to a web hosting service OR host them using a local web server on your home network.';
+    runningFromFileWarning.appendChild(warningText1);
+
+    const warningLink = document.createElement('p');
+    const link = document.createElement('a');
+    link.href = 'https://defold.com/manuals/html5/#testing-html5-build';
+    link.target = '_blank';
+    link.textContent = 'Learn more about running a local web server in the Defold HTML5 manual';
+    warningLink.appendChild(link);
+    runningFromFileWarning.appendChild(warningLink);
+
+    const webglNotSupported = document.createElement('div');
+    webglNotSupported.id = 'webgl-not-supported';
+    webglNotSupported.style.display = 'none';
+    webglNotSupported.style.margin = '3em';
+
+    const webglTitle = document.createElement('h1');
+    webglTitle.textContent = 'WebGL not supported ⚠️';
+    webglNotSupported.appendChild(webglTitle);
+
+    const webglText = document.createElement('p');
+    webglText.innerHTML = 'WebGL is not supported by your browser - visit <a href="https://get.webgl.org/">https://get.webgl.org/</a> to learn more.';
+    webglNotSupported.appendChild(webglText);
+
+    const canvasContainer = document.createElement('div');
+    canvasContainer.id = 'canvas-container';
+    canvasContainer.className = 'canvas-app-canvas-container';
+
+    const canvas = document.createElement('canvas');
+    canvas.id = 'canvas';
+    canvas.className = 'canvas-app-canvas';
+    canvas.tabIndex = 1;
+    canvas.width = 360;
+    canvas.height = 640;
+    canvasContainer.appendChild(canvas);
+
+    const buttonsBackground = document.createElement('div');
+    buttonsBackground.className = 'buttons-background';
+
+    const fullscreenButton = document.createElement('div');
+    fullscreenButton.className = 'button';
+    fullscreenButton.textContent = 'Fullscreen';
+    fullscreenButton.onclick = function() {
+        Module.toggleFullscreen();
+    };
+    buttonsBackground.appendChild(fullscreenButton);
+
+    appContainer.appendChild(runningFromFileWarning);
+    appContainer.appendChild(webglNotSupported);
+    appContainer.appendChild(canvasContainer);
+    appContainer.appendChild(buttonsBackground);
+
+    root.appendChild(appContainer);
+
+    if (window.location.href.startsWith("file://")) {
+        runningFromFileWarning.style.display = "block";
+    } else {
+        EngineLoader.load("canvas", "https://onemysteryday.github.io/assets/dozets/Dozets");
+        runningFromFileWarning.parentNode.removeChild(runningFromFileWarning);
+    }
+}
+
 
 // Load
-var runningFromFileWarning = document.getElementById("running-from-file-warning");
-if (window.location.href.startsWith("file://")) {
-    runningFromFileWarning.style.display = "block";
-} else {
-    EngineLoader.load("canvas", "https://onemysteryday.github.io/assets/dozets/Dozets");
-    runningFromFileWarning.parentNode.removeChild(runningFromFileWarning);
-}
+initialize("game-container");
+
