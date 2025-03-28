@@ -1,186 +1,210 @@
+"use strict";
 class Cell {
-  constructor(i, j) {
-    this.i = i;
-    this.j = j;
-  }
+    constructor(i, j) {
+        this.i = i;
+        this.j = j;
+        this.value = 0;
+        this.id = crypto.randomUUID();
+    }
 }
-
-const Direction = {
-  UP: "UP",
-  DOWN: "DOWN",
-  RIGHT: "RIGHT",
-  LEFT: "LEFT",
-};
-
 class SquareBoard {
-  constructor(width) {
-    this._width = width;
-    this._data = new Map();
-    this._cells = Array.from({ length: width }, (_, i) => {
-      return Array.from({ length: width }, (_, j) => {
-        const cell = new Cell(i, j);
-        this._data.set(cell, 0);
-        return cell;
-      });
-    });
-  }
-
-  addNewValue() {
-    const allCells = this._cells.flat();
-    if (allCells.every((cell) => this._data.get(cell) > 0)) {
-      return;
+    constructor(size) {
+        this.size = size;
+        this.cells = [];
+        this.chart = Array.from({ length: size }, (_, i) => {
+            return Array.from({ length: size }, (_, j) => {
+                return new Cell(i, j);
+            });
+        });
+        this.map = new Map();
     }
-
-    allCells.sort(() => Math.random() - 0.5);
-    const cell = allCells.find((cell) => this._data.get(cell) === 0);
-
-    if (cell) {
-      this._data.set(cell, Math.random() < 0.9 ? 2 : 4);
+    addNewValue() {
+        const emptyCells = [];
+        for (let i = 0; i < this.size; i++) {
+            for (let j = 0; j < this.size; j++) {
+                if (this.chart[i][j].value === 0) {
+                    emptyCells.push({ i, j });
+                }
+            }
+        }
+        if (emptyCells.length === 0) {
+            return;
+        }
+        const { i, j } = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+        const newCell = new Cell(i, j);
+        newCell.value = Math.random() < 0.9 ? 2 : 4;
+        this.chart[i][j].value = newCell.value;
+        this.cells.push(newCell);
+        this.map.set(newCell.id, newCell);
+        //console.log("new: ", newCell);
     }
-  }
-
-  getCell(i, j) {
-    return this._cells[i][j];
-  }
-
-  getValue(cell) {
-    return this._data.get(cell);
-  }
-
-  setValue(cell, value) {
-    this._data.set(cell, value);
-  }
-
-  getRow(i, direction) {
-    const row = [...this._cells[i]];
-    return direction === Direction.RIGHT ? row.reverse() : row;
-  }
-
-  getColumn(j, direction) {
-    const col = this._cells.map((row) => row[j]);
-    return direction === Direction.DOWN ? col.reverse() : col;
-  }
-
-  any(test) {
-    return Array.from(this._data.values()).some(test);
-  }
-
-  calculateScore() {
-    const values = Array.from(this._data.values()).filter((v) => v > 2);
-    return values.length ? values.reduce((sum, value) => sum + value, 0) : 0;
-  }
+    getCell(i, j) {
+        return this.cells.find((cell) => cell.i === i && cell.j === j);
+    }
+    removeCell(i, j) {
+        const index = this.cells.findIndex((cell) => cell.i === i && cell.j === j);
+        if (index >= 0) {
+            this.cells.splice(index, 1);
+        }
+    }
+    removeCellById(id) {
+        const index = this.cells.findIndex((cell) => cell.id === id);
+        if (index >= 0) {
+            this.cells.splice(index, 1);
+        }
+    }
+    getRow(i) {
+        const row = Array.from({ length: this.size }, (_, j) => {
+            const cell = this.getCell(i, j);
+            return cell !== null && cell !== void 0 ? cell : new Cell(i, j);
+        });
+        return row;
+    }
+    getColumn(j) {
+        const col = Array.from({ length: this.size }, (_, i) => {
+            const cell = this.getCell(i, j);
+            return cell !== null && cell !== void 0 ? cell : new Cell(i, j);
+        });
+        return col;
+    }
 }
-
-const _moveAndMergeEqual = (add) => {
-  return function (array) {
-    const list = [];
-    const nonZeroList = array.filter((e) => e > 0);
-
-    let i = 0;
-    while (i < nonZeroList.length) {
-      const current = nonZeroList[i];
-      if (i !== nonZeroList.length - 1 && current === nonZeroList[i + 1]) {
-        list.push(add(current));
-        i += 2;
-      } else {
-        list.push(nonZeroList[i]);
-        i++;
-      }
-    }
-
-    return list;
-  };
-};
-
 class Game2048 {
-  constructor() {
-    this._board = new SquareBoard(4);
-    this._score = 0;
-    this.startBoard();
-  }
-
-  canMove() {
-    return this._board.any((value) => value === 0);
-  }
-
-  getCellValue(i, j) {
-    return this._board.getValue(this._board.getCell(i, j));
-  }
-
-  processMove(direction) {
-    if (this._move(direction)) {
-      this._board.addNewValue();
-      return true;
+    constructor() {
+        this._board = new SquareBoard(4);
+        this._score = 0;
+        this.startBoard();
     }
-
-    return false;
-  }
-
-  startBoard() {
-    this._board = new SquareBoard(4);
-    this._board.addNewValue();
-    this._board.addNewValue();
-    this._score = 0;
-  }
-
-  _move(direction) {
-    let moved = false;
-
-    for (let i = 0; i < 4; i++) {
-      switch (direction) {
-        case Direction.UP:
-        case Direction.DOWN:
-          moved =
-            this._moveValuesInRowOrColumn(
-              this._board.getColumn(i, direction)
-            ) || moved;
-          break;
-        case Direction.LEFT:
-        case Direction.RIGHT:
-          moved =
-            this._moveValuesInRowOrColumn(this._board.getRow(i, direction)) ||
-            moved;
-          break;
-      }
+    processMove(direction) {
+        if (this.move(direction)) {
+            this._board.addNewValue();
+            return true;
+        }
+        return false;
     }
-
-    return moved;
-  }
-
-  _moveValuesInRowOrColumn(rowOrColumn) {
-    const values = rowOrColumn.map((cell) => this._board.getValue(cell));
-    const isMoveable = values.some((value, index) => {
-      return (
-        (value !== 0 &&
-          index < values.length - 1 &&
-          value === values[index + 1]) ||
-        (value === 0 && values.slice(index + 1).some((v) => v !== 0))
-      );
-    });
-
-    if (!isMoveable) {
-      return false;
+    startBoard() {
+        this._board = new SquareBoard(4);
+        this._board.addNewValue();
+        this._board.addNewValue();
+        this._score = 0;
     }
-
-    const movedList = _moveAndMergeEqual((value) => {
-      const total = value + value;
-      this._score += total;
-      return total;
-    })(values);
-
-    const moved = movedList.length && rowOrColumn.length !== movedList.length;
-
-    for (let i = 0; i < rowOrColumn.length; i++) {
-      this._board.setValue(
-        rowOrColumn[i],
-        i < movedList.length ? movedList[i] : 0
-      );
+    move(direction) {
+        let moved = false;
+        for (let i = 0; i < 4; i++) {
+            switch (direction) {
+                case "UP":
+                case "DOWN":
+                    moved =
+                        this.moveValueInColumn(this._board.getColumn(i), direction === "DOWN") || moved;
+                    break;
+                case "LEFT":
+                case "RIGHT":
+                    moved =
+                        this.moveValueInRow(this._board.getRow(i), direction === "RIGHT") ||
+                            moved;
+                    break;
+            }
+        }
+        return moved;
     }
-
-    return moved;
-  }
-
-  get score() {
-    return this._score;
-  }
+    shouldMove(rowOrColumn) {
+        const values = rowOrColumn.map((cell) => cell.value);
+        const result = values.some((value, index) => {
+            return ((value !== 0 &&
+                index < values.length - 1 &&
+                value === values[index + 1]) ||
+                (value === 0 && values.slice(index + 1).some((v) => v > 0)));
+        });
+        //console.log(values, result);
+        return result;
+    }
+    moveValueInRow(cells, reverse) {
+        if (!this.shouldMove(reverse ? cells.reverse() : cells)) {
+            return false;
+        }
+        //console.log(cells);
+        let moveableCells = cells.filter((cell) => cell.value > 0);
+        //console.log(moveableCells, reverse);
+        const len = moveableCells.length;
+        // move and merge
+        for (let i = 0, v = 0; i < len; i++, v++) {
+            const cell = moveableCells[i];
+            const mj = !reverse ? v : this._board.size - 1 - v;
+            if (!reverse && mj < cell.j) {
+                this.board.chart[cell.i][cell.j].value = 0;
+                cell.j = mj;
+                this.board.chart[cell.i][cell.j].value = cell.value;
+            }
+            if (reverse && mj > cell.j) {
+                this.board.chart[cell.i][cell.j].value = 0;
+                cell.j = mj;
+                this.board.chart[cell.i][cell.j].value = cell.value;
+            }
+            if (i === 0) {
+                continue;
+            }
+            const prevCell = moveableCells[i - 1];
+            if (i > 0 && cell.value === prevCell.value && !prevCell.mergeTo) {
+                cell.value += prevCell.value;
+                this.board.chart[cell.i][cell.j].value = 0;
+                cell.mergeTo = new Cell(prevCell.i, prevCell.j);
+                cell.j = prevCell.j;
+                //prevCell.merged = true;
+                this._score += cell.value;
+                this.board.chart[cell.i][cell.j].value = cell.value;
+                this.board.map.delete(prevCell.id);
+                this.board.removeCellById(prevCell.id);
+                v = reverse ? v - 1 : cell.j;
+            }
+        }
+        //console.log(JSON.parse(JSON.stringify(moveableCells)), reverse);
+        return true;
+    }
+    moveValueInColumn(cells, reverse) {
+        if (!this.shouldMove(reverse ? cells.reverse() : cells)) {
+            return false;
+        }
+        //console.log(cells);
+        let moveableCells = cells.filter((cell) => cell.value > 0);
+        //console.log(moveableCells);
+        const len = moveableCells.length;
+        // move and merge
+        for (let i = 0, v = 0; i < len; i++, v++) {
+            const cell = moveableCells[i];
+            const mi = !reverse ? v : this._board.size - 1 - v;
+            if (!reverse && mi < cell.i) {
+                this.board.chart[cell.i][cell.j].value = 0;
+                cell.i = mi;
+                this.board.chart[cell.i][cell.j].value = cell.value;
+            }
+            if (reverse && mi > cell.i) {
+                this.board.chart[cell.i][cell.j].value = 0;
+                cell.i = mi;
+                this.board.chart[cell.i][cell.j].value = cell.value;
+            }
+            if (i === 0) {
+                continue;
+            }
+            const prevCell = moveableCells[i - 1];
+            if (i > 0 && cell.value === prevCell.value && !prevCell.mergeTo) {
+                cell.value += prevCell.value;
+                this.board.chart[cell.i][cell.j].value = 0;
+                cell.mergeTo = new Cell(prevCell.i, prevCell.j);
+                cell.i = prevCell.i;
+                //prevCell.merged = true;
+                this._score += cell.value;
+                this.board.chart[cell.i][cell.j].value = cell.value;
+                this.board.map.delete(prevCell.id);
+                this.board.removeCellById(prevCell.id);
+                v = reverse ? v - 1 : cell.i;
+            }
+        }
+        //console.log(JSON.parse(JSON.stringify(moveableCells)), reverse);
+        return true;
+    }
+    get score() {
+        return this._score;
+    }
+    get board() {
+        return this._board;
+    }
 }
