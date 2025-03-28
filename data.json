@@ -1,0 +1,27 @@
+[
+    {
+        "id": "dozets",
+        "name": "Dozets",
+        "logo": "https://onemysteryday.github.io/assets/dozets/dozets.png",
+        "links": [
+            "https://onemysteryday.github.io/assets/dozets/index.css"
+        ],
+        "scripts": [
+            "https://onemysteryday.github.io/assets/dozets/index.js"
+        ],
+        "displayOrder": 1
+    },
+    {
+        "id": "2048",
+        "name": "2048",
+        "logo": "https://onemysteryday.github.io/assets/2048/2048.png",
+        "links": [
+            "https://onemysteryday.github.io/assets/2048/index.css"
+        ],
+        "scripts": [
+            "https://onemysteryday.github.io/assets/2048/game.js",
+            "https://onemysteryday.github.io/assets/2048/index.js"
+        ],
+        "displayOrder": 2
+    }
+]
