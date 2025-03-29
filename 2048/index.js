@@ -208,7 +208,6 @@ class Game2048 {
         return this._board;
     }
 }
-
 const gameLoader = {
     game: null,
     previousScore: 0,
@@ -253,8 +252,10 @@ const keyEventListener = (evt) => {
 const touchStartListener = (evt) => {
     gameLoader.touchStartX = evt.touches[0].clientX;
     gameLoader.touchStartY = evt.touches[0].clientY;
+    evt.preventDefault();
 };
 const touchEndListener = (evt) => {
+    evt.preventDefault();
     const touchEndX = evt.changedTouches[0].clientX;
     const touchEndY = evt.changedTouches[0].clientY;
     const diffX = gameLoader.touchStartX - touchEndX;
