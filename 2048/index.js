@@ -216,7 +216,6 @@ const gameLoader = {
     touchStartY: 0,
     lastPress: 0,
     bestScoreKey: "2048-best-score",
-    containerId: "game-container",
 };
 const keyEventListener = (evt) => {
     const now = new Date().getTime();
@@ -418,9 +417,8 @@ const refreshBoard = () => {
     }
     gameLoader.previousScore = game.score;
 };
-const initialize = () => {
+const initialize = (elementId) => {
     var _a;
-    const elementId = gameLoader.containerId;
     const root = document.getElementById(elementId);
     if (!root) {
         console.error(`Element with id ${elementId} not found.`);
@@ -495,11 +493,11 @@ const initialize = () => {
     container.appendChild(board);
     container.appendChild(footer);
     root.appendChild(container);
-    refreshBoard();
+    setTimeout(refreshBoard, 500);
 };
 const destroy = () => {
     window.removeEventListener("keyup", keyEventListener);
     window.removeEventListener("resize", resizeListener);
 };
-initialize();
+initialize("game-container");
 window.destroy = destroy;
